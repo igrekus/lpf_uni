@@ -112,10 +112,10 @@ class InstrumentManager:
 
         return self._programmer and self._analyzer
 
-    def set_lpf_code(self, code: int):
-        return self._programmer.set_lpf_code(code)
-
     def measure(self, code):
+        if not self._programmer.set_lpf_code(code):
+            print(f'error setting code: {code}')
+            return [], []
         return self._analyzer.measure(code)
 
     @property
@@ -200,9 +200,6 @@ class Domain(QObject):
 
     def _measureCode(self, harmonic=1, code=0):
         print(f'\nmeasure: code={code:03d}, bin={code:07b}')
-        if not self._instruments.set_lpf_code(code):
-            print(f'error setting code: {code}')
-            return
         self._lastMeasurement = self._instruments.measure(code)
 
     def _measureTask(self):
