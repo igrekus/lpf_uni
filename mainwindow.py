@@ -140,8 +140,10 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_btnExportExcel_clicked(self):
         print('export to excel')
-        to_export = [('cutoff_freq.xlsx', 'Код', 'Частота среза', self._domain.cutoffXs, self._domain.cutoffYs),
-                     ('cutoff_delta.xlsx', 'Код', 'Дельта', self._domain.deltaXs, self._domain.deltaYs)]
+        to_export = [('частота_среза.xlsx', 'Код', 'Частота среза', self._domain.cutoffXs, self._domain.cutoffYs),
+                     ('дельта_частоты.xlsx', 'Код', 'Дельта', self._domain.deltaXs, self._domain.deltaYs),
+                     ('коэфф_подавления_x2.xlsx', 'Код', 'Коффю подавления при x2 частоте', self._domain.lossDoubleXs, self._domain.lossDoubleYs),
+                     ('коэфф_подавления_x3.xlsx', 'Код', 'Коффю подавления при x3 частоте', self._domain.lossTripleXs, self._domain.lossTripleYs)]
 
         for ex in to_export:
             self.export_to_excel(ex)
