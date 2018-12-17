@@ -272,7 +272,7 @@ class Domain(QObject):
 
         self.statsReady.emit()
 
-    def measureHarmonic(self):
+    def measureSingle(self):
         print(f'measure harmonic={self._harmonic}, code={self._code}')
         with MeasureContext(self._instruments):
             self._measureCode(harmonic=self._harmonic, code=self._code)

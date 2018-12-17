@@ -25,14 +25,13 @@ class MainWindow(QMainWindow):
         self._ui = uic.loadUi("mainwindow.ui", self)
 
         self._domain = Domain(parent=self)
-        self._statPlot = StatPlotWidget(parent=self, domain=self._domain)
 
-        self._harmonicPlot = SingleMeasureWidget(parent=self, domain=self._domain)
+        self._ui.singleMeasure = SingleMeasureWidget(parent=self, domain=self._domain)
         self._ui.layHarmonic.addLayout(self._ui.layCode)
-        self._ui.layHarmonic.addWidget(self._harmonicPlot)
+        self._ui.layHarmonic.addWidget(self._ui.singleMeasure)
 
-        self._ui.tabwidgetCharts.insertTab(0, self._statPlot, 'Измерения')
-        # self._ui.tabwidgetCharts.setCurrentIndex(0)
+        self._ui.statPlot = StatPlotWidget(parent=self, domain=self._domain)
+        self._ui.tabwidgetCharts.insertTab(0, self._ui.statPlot, 'Измерения')
 
         self._init()
 
@@ -52,29 +51,31 @@ class MainWindow(QMainWindow):
 
     def _setupControls(self):
         pass
+        # self._ui.tabwidgetCharts.setCurrentIndex(0)
 
     def _refreshView(self):
         pass
 
     def _modeFindInstr(self):
         self._ui.btnMeasure.setEnabled(False)
-        self._ui.btnMeasureHarmonic.setEnabled(False)
+        self._ui.btnMeasureSingle.setEnabled(False)
         self._ui.spinCutoffMagnitude.setEnabled(True)
 
     def _modeMeasureReady(self):
         self._ui.btnMeasure.setEnabled(True)
-        self._ui.btnMeasureHarmonic.setEnabled(True)
+        self._ui.btnMeasureSingle.setEnabled(True)
         self._ui.spinCutoffMagnitude.setEnabled(True)
 
     def _modeMeasureRunning(self):
         self._ui.btnMeasure.setEnabled(False)
-        self._ui.btnMeasureHarmonic.setEnabled(False)
+        self._ui.btnMeasureSingle.setEnabled(False)
         self._ui.spinCutoffMagnitude.setEnabled(False)
 
     def _modeMeasureFinished(self):
         self._ui.btnMeasure.setEnabled(True)
-        self._ui.btnMeasureHarmonic.setEnabled(True)
+        self._ui.btnMeasureSingle.setEnabled(True)
         self._ui.spinCutoffMagnitude.setEnabled(True)
+        self._ui.btnMeasureSingle
 
     # event handlers
     def resizeEvent(self, event):
@@ -82,13 +83,13 @@ class MainWindow(QMainWindow):
 
     def on_statsReady(self):
         self._modeMeasureFinished()
-        self._statPlot.plotStats()
+        self._ui.statPlot.plotStats()
 
     def on_codeMeasured(self):
-        self._statPlot.plotCode()
+        self._ui.statPlot.plotCode()
 
     def on_harmonicMeasured(self):
-        self._harmonicPlot.plotHarmonic()
+        self._ui.singleMeasure.plotHarmonic()
 
     @pyqtSlot(str)
     def on_editAnalyzerAddr_textChanged(self, text):
@@ -111,13 +112,13 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_btnMeasure_clicked(self):
         if self._domain.canMeasure:
-            self._statPlot.clear()
+            self._ui.statPlot.clear()
             self._modeMeasureRunning()
             self._domain.measure()
 
     @pyqtSlot()
-    def on_btnMeasureHarmonic_clicked(self):
-        self._domain.measureHarmonic()
+    def on_btnMeasureSingle_clicked(self):
+        self._domain.measureSingle()
 
     @pyqtSlot(int)
     def on_spinCode_valueChanged(self, value):
@@ -131,7 +132,7 @@ class MainWindow(QMainWindow):
     def on_btnExportPng_clicked(self):
         print('saving images')
         path = ".\\image\\"
-        self._statPlot.save(path)
+        self._ui.statPlot.save(path)
         subprocess.call(f'explorer {path}', shell=True)
         print('done')
 

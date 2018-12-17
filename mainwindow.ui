@@ -301,7 +301,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btnMeasureHarmonic">
+              <widget class="QPushButton" name="btnMeasureSingle">
                <property name="enabled">
                 <bool>false</bool>
                </property>
