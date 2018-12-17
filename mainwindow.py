@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore import Qt, pyqtSlot, QRegularExpression
 
 from domain import Domain
+from harmonicmeasurewidget import HarmonicMeasureWidget
 from singlemeasurewidget import SingleMeasureWidget
 from statplotwidget import StatPlotWidget
 
@@ -33,6 +34,9 @@ class MainWindow(QMainWindow):
         self._ui.statPlot = StatPlotWidget(parent=self, domain=self._domain)
         self._ui.tabwidgetCharts.insertTab(0, self._ui.statPlot, 'Измерения')
 
+        self._ui.harmonicMeasure = HarmonicMeasureWidget(parent=self, domain=self._domain)
+        self._ui.tabwidgetCharts.insertTab(1, self._ui.harmonicMeasure, 'Гармоники')
+
         self._init()
 
     def _init(self):
@@ -45,6 +49,7 @@ class MainWindow(QMainWindow):
         self._refreshView()
 
     def _setupSignals(self):
+        self._ui.harmonicMeasure.btnMeasure.clicked.connect(self.on_btnMeasureHarmonic_clicked)
         self._domain.statsReady.connect(self.on_statsReady)
         self._domain.codeMeasured.connect(self.on_codeMeasured)
         self._domain.harmonicMeasured.connect(self.on_harmonicMeasured)
@@ -60,22 +65,25 @@ class MainWindow(QMainWindow):
         self._ui.btnMeasure.setEnabled(False)
         self._ui.btnMeasureSingle.setEnabled(False)
         self._ui.spinCutoffMagnitude.setEnabled(True)
+        self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
 
     def _modeMeasureReady(self):
         self._ui.btnMeasure.setEnabled(True)
         self._ui.btnMeasureSingle.setEnabled(True)
         self._ui.spinCutoffMagnitude.setEnabled(True)
+        self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
 
     def _modeMeasureRunning(self):
         self._ui.btnMeasure.setEnabled(False)
         self._ui.btnMeasureSingle.setEnabled(False)
         self._ui.spinCutoffMagnitude.setEnabled(False)
+        self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
 
     def _modeMeasureFinished(self):
         self._ui.btnMeasure.setEnabled(True)
         self._ui.btnMeasureSingle.setEnabled(True)
         self._ui.spinCutoffMagnitude.setEnabled(True)
-        self._ui.btnMeasureSingle
+        self._ui.harmonicMeasure.btnMeasure.setEnabled(True)
 
     # event handlers
     def resizeEvent(self, event):
@@ -119,6 +127,10 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_btnMeasureSingle_clicked(self):
         self._domain.measureSingle()
+
+    @pyqtSlot()
+    def on_btnMeasureHarmonic_clicked(self):
+        print('print measure harmonics')
 
     @pyqtSlot(int)
     def on_spinCode_valueChanged(self, value):
