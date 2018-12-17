@@ -116,6 +116,7 @@ class InstrumentManager:
         if not self._programmer.set_lpf_code(code):
             print(f'error setting code: {code}')
             return [], []
+        time.sleep(0.7)
         return self._analyzer.measure(code)
 
     @property
@@ -212,7 +213,6 @@ class Domain(QObject):
 
         with MeasureContext(self._instruments):
             for code in range(regs):
-                time.sleep(0.5)
                 self._measureCode(code=code)
                 self._processCode()
                 self.codeMeasured.emit()
