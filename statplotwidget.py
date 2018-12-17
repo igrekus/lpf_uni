@@ -81,7 +81,7 @@ class StatPlotWidget(QWidget):
         self._plot22.plot(self._domain.lossDoubleXs, self._domain.lossDoubleYs, color='0.4')
         self._plot22.plot(self._domain.lossTripleXs, self._domain.lossTripleYs, color='0.4')
 
-        self._plot11.axhline(self._domain.cutoffMag, 0, 1, linewidth=0.8, color='0.3', linestyle='--')
+        self._plot11.axhline(self._domain.cutoffAmp, 0, 1, linewidth=0.8, color='0.3', linestyle='--')
         self._plot11.set_yticks(sorted(set(list(self._plot11.get_yticks()[0]) + [self._domain.cutoffMag])))
 
     def save(self, img_path='./image'):

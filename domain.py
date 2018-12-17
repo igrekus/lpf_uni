@@ -238,6 +238,7 @@ class Domain(QObject):
         max_amp = max(map(max, self.amps))
 
         cutoff_mag = max_amp + self._cutoffMag
+        self._cutoffAmp = cutoff_mag
 
         for a, f in zip(self.amps, self.freqs):
             cutoff_freq = f[a.index(min(a, key=lambda x: abs(cutoff_mag - x)))]
@@ -366,5 +367,7 @@ class Domain(QObject):
     def code(self, value):
         self._code = value
 
-
+    @property
+    def cutoffAmp(self):
+        return self._cutoffAmp
 
