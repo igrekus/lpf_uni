@@ -175,6 +175,7 @@ class Domain(QObject):
         self.cutoff_freq_delta_y = list()
 
         self._cutoffMag = -6
+        self._cutoffAmp = 0
 
         self.measurementFinished.connect(self._processStats)
 
@@ -244,13 +245,18 @@ class Domain(QObject):
             cutoff_freq = f[a.index(min(a, key=lambda x: abs(cutoff_mag - x)))]
             self.cutoff_freqs.append(cutoff_freq)
 
+            amp_max = max(a)
+
             double_f = cutoff_freq * 2
             triple_f = cutoff_freq * 3
             double_f_index = f.index(min(f, key=lambda x: abs(double_f - x)))
             triple_f_index = f.index(min(f, key=lambda x: abs(triple_f - x)))
 
-            self.loss_double_freq.append(a[double_f_index])
-            self.loss_triple_freq.append(a[triple_f_index])
+            self.loss_double_freq.append(amp_max - a[double_f_index])
+            self.loss_triple_freq.append(amp_max - a[triple_f_index])
+
+        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x2
+        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x3
 
         self.cutoff_freqs = list(reversed(self.cutoff_freqs))
         # TODO also reverse
