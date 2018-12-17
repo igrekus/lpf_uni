@@ -39,10 +39,9 @@ class MainWindow(QMainWindow):
         self._init()
 
     def _init(self):
-        validator = QRegularExpressionValidator(QRegularExpression(
+        self._ui.editAnalyzerAddr.setValidator(QRegularExpressionValidator(QRegularExpression(
             '^TCPIP::(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}'
-            '([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])::INSTR$'))
-        self._ui.editAnalyzerAddr.setValidator(validator)
+            '([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])::INSTR$')))
 
         self._setupSignals()
         self._setupControls()
