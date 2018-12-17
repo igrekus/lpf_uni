@@ -350,19 +350,19 @@ class Domain(QObject):
         return self.loss_triple_freq
 
     @property
-    def harmonicXs(self):
+    def singleMeasureXs(self):
         return self._lastFreqs
 
     @property
-    def harmonicYs(self):
+    def singleMeasureYs(self):
         return self._lastAmps
 
     @property
-    def harmonic(self):
+    def harmonicN(self):
         return self._harmonic
 
-    @harmonic.setter
-    def harmonic(self, value):
+    @harmonicN.setter
+    def harmonicN(self, value):
         self._harmonic = value
 
     @property

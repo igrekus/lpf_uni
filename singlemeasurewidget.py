@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from mytools.plotwidget import PlotWidget
 
 
-class HarmonicPlotWidget(QWidget):
+class SingleMeasureWidget(QWidget):
 
     def __init__(self, parent=None, domain=None):
         super().__init__(parent)
@@ -32,7 +32,7 @@ class HarmonicPlotWidget(QWidget):
 
     def plotHarmonic(self):
         print('plotting harmonic')
-        self._plot.plot(self._domain.harmonicXs, self._domain.harmonicYs, color='0.4')
+        self._plot.plot(self._domain.singleMeasureXs, self._domain.singleMeasureYs, color='0.4')
 
 
 

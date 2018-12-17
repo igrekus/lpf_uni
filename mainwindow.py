@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore import Qt, pyqtSlot, QRegularExpression
 
 from domain import Domain
-from harmonicplotwidget import HarmonicPlotWidget
+from singlemeasurewidget import SingleMeasureWidget
 from statplotwidget import StatPlotWidget
 
 
@@ -27,14 +27,12 @@ class MainWindow(QMainWindow):
         self._domain = Domain(parent=self)
         self._statPlot = StatPlotWidget(parent=self, domain=self._domain)
 
-        self._harmonicPlot = HarmonicPlotWidget(parent=self, domain=self._domain)
-        self._ui.layHarmonic.addLayout(self._ui.codeWidget)
+        self._harmonicPlot = SingleMeasureWidget(parent=self, domain=self._domain)
+        self._ui.layHarmonic.addLayout(self._ui.layCode)
         self._ui.layHarmonic.addWidget(self._harmonicPlot)
 
-        # TODO add harmonic plot widget
-
-        self._ui.tabCharts.insertTab(0, self._statPlot, 'Измерения')
-        # self._ui.tabCharts.setCurrentIndex(0)
+        self._ui.tabwidgetCharts.insertTab(0, self._statPlot, 'Измерения')
+        # self._ui.tabwidgetCharts.setCurrentIndex(0)
 
         self._init()
 
@@ -127,7 +125,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(int)
     def on_spinHarmonic_valueChanged(self, value):
-        self._domain.harmonic = value
+        self._domain.harmonicN = value
 
     @pyqtSlot()
     def on_btnExportPng_clicked(self):

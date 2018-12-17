@@ -249,13 +249,13 @@
      </layout>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabCharts">
+     <widget class="QTabWidget" name="tabwidgetCharts">
       <property name="currentIndex">
        <number>0</number>
       </property>
       <widget class="QWidget" name="tabHarmonic">
        <attribute name="title">
-        <string>Гармоники</string>
+        <string>Единичное измерение</string>
        </attribute>
        <layout class="QVBoxLayout" name="layHarmonic">
         <item>
@@ -268,7 +268,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
-            <layout class="QHBoxLayout" name="codeWidget">
+            <layout class="QHBoxLayout" name="layCode">
              <item>
               <widget class="QLabel" name="lblHarmonic">
                <property name="text">
