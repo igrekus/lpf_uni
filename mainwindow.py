@@ -99,12 +99,10 @@ class MainWindow(QMainWindow):
 
     def on_harmonicMeasured(self):
         self._ui.harmonicMeasure.btnMeasure.setEnabled(True)
-        if self._domain.harm_x2 and not self._domain.harm_x3:
-            self._domain.processHarmonic(2)
-            self._ui.harmonicMeasure.plot(2)
-        elif self._domain.harm_x2 and self._domain.harm_x3:
-            self._domain.processHarmonic(3)
-            self._ui.harmonicMeasure.plot(3)
+        try:
+            self._ui.harmonicMeasure.plot()
+        except Exception as ex:
+            print(ex)
 
     def on_singleMeasured(self):
         self._ui.singleMeasure.plot()
@@ -145,20 +143,9 @@ class MainWindow(QMainWindow):
                                     'Сперва необходимо провести стандартное измерение.')
             return
 
-        if not self._domain.harm_x2:
-            self._ui.harmonicMeasure.clear()
-            QMessageBox.information(self, 'Внимание',
-                                    'Включите смещение частоты и выставьте множитель равный <font color="red">двум</font>. '
-                                    'Затем нажмите кнопку OK.')
-            self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
-            self._domain.measureHarmonic(2)
-
-        elif not self._domain.harm_x3:
-            QMessageBox.information(self, 'Внимание',
-                                    'Включите смещение частоты и выставьте множитель равный <font color="red">трём</font>. '
-                                    'Затем нажмите кнопку OK.')
-            self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
-            self._domain.measureHarmonic(3)
+        self._ui.harmonicMeasure.clear()
+        self._domain.measureHarmonics()
+        self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
 
     @pyqtSlot(int)
     def on_spinCode_valueChanged(self, value):
