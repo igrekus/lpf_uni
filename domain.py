@@ -255,9 +255,6 @@ class Domain(QObject):
             self.loss_double_freq.append(amp_max - a[double_f_index])
             self.loss_triple_freq.append(amp_max - a[triple_f_index])
 
-        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x2
-        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x3
-
         self.cutoff_freqs = list(reversed(self.cutoff_freqs))
         # TODO also reverse
         # self.loss_double_freq.append(a[double_f_index])
