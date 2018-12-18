@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict
 
 import serial
 from PyQt5.QtCore import QObject, pyqtSignal, QRunnable, pyqtSlot, QThreadPool
@@ -30,6 +31,8 @@ class InstrumentManager:
         self._analyzer = None
 
         self._available_ports = list()
+
+        self._harmonic = 1
 
     def _find_ports(self):
         for port in [f'COM{i+1}' for i in range(256)]:
@@ -120,6 +123,14 @@ class InstrumentManager:
         return self._analyzer.measure(code)
 
     @property
+    def harmonic(self):
+        return self._harmonic
+
+    @harmonic.setter
+    def harmonic(self, value):
+        print('>>> IM set harmonic', value)
+
+    @property
     def analyzer_addr(self):
         return self._analyzer_addr
 
@@ -151,6 +162,7 @@ class Domain(QObject):
     measurementFinished = pyqtSignal()
     statsReady = pyqtSignal()
     harmonicMeasured = pyqtSignal()
+    harmonicPointMeasured = pyqtSignal()
     singleMeasured = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -160,7 +172,6 @@ class Domain(QObject):
         self.pool = QThreadPool()
 
         self._code = 0
-        self._harmonic = 1
 
         self._lastMeasurement = tuple()
         self._lastFreqs = list()
@@ -174,15 +185,15 @@ class Domain(QObject):
         self.loss_triple_freq = list()
         self.cutoff_freq_delta_x = list()
         self.cutoff_freq_delta_y = list()
-        self.harm_x2 = list()
-        self.harm_x3 = list()
-        self.harm_x2_deltas = list()
-        self.harm_x3_deltas = list()
+
+        self.harms = defaultdict(list)
+        self.harm_deltas = defaultdict(list)
 
         self._cutoffMag = -6
         self._cutoffAmp = 0
 
         self.measurementFinished.connect(self._processStats)
+        self.harmonicPointMeasured.connect(self._processHarmonics)
 
     def _clear(self):
         self._lastFreqs.clear()
@@ -195,8 +206,8 @@ class Domain(QObject):
         self.loss_triple_freq.clear()
         self.cutoff_freq_delta_x.clear()
         self.cutoff_freq_delta_y.clear()
-        self.harm_x2.clear()
-        self.harm_x3.clear()
+        self.harms.clear()
+        self.harm_deltas.clear()
 
     def findInstruments(self):
         print('find instruments')
@@ -207,7 +218,7 @@ class Domain(QObject):
         self._clear()
         self.pool.start(Task(self.measurementFinished.emit, self._measureTask))
 
-    def _measureCode(self, harmonic=1, code=0):
+    def _measureCode(self, code=0):
         print(f'\nmeasure: code={code:03d}, bin={code:07b}')
         self._lastMeasurement = self._instruments.measure(code)
 
@@ -263,9 +274,8 @@ class Domain(QObject):
             self.loss_triple_freq.append(amp_max - a[triple_f_index])
 
         self.cutoff_freqs = list(reversed(self.cutoff_freqs))
-        # TODO also reverse
-        # self.loss_double_freq.append(a[double_f_index])
-        # self.loss_triple_freq.append(a[triple_f_index])
+        # self.loss_double_freq = list(reversed(self.loss_double_freq))
+        # self.loss_triple_freq = list(reversed(self.loss_triple_freq))
         self.codes = list(range(len(self.cutoff_freqs)))
 
         for i in range(len(self.cutoff_freqs[:-1])):
@@ -279,23 +289,20 @@ class Domain(QObject):
     def measureSingle(self):
         print(f'measure harmonic={self._harmonic}, code={self._code}')
         with MeasureContext(self._instruments):
-            self._measureCode(harmonic=self._harmonic, code=self._code)
+            self._measureCode(code=self._code)
             self._processCode()
 
         self.singleMeasured.emit()
 
-    def measureHarmonic(self, n):
-        print(f'run harmonic measurement, cutoff={self._cutoffMag}, harmonic={n}')
+    def measureHarmonics(self):
+        print(f'run harmonic measurement, cutoff={self._cutoffMag}')
 
-        if n == 2:
-            self.harm_x2.clear()
-        elif n == 3:
-            self.harm_x3.clear()
+        self.harms.clear()
+        self.harm_deltas.clear()
+        self.pool.start(Task(self.harmonicPointMeasured.emit, self._measureHarmonicTask))
 
-        self.pool.start(Task(self.harmonicMeasured.emit, self._measureHarmonicTask, n))
-
-    def _measureHarmonicTask(self, n):
-        print(f'start harmonic measurement task, harmonic={n}')
+    def _measureHarmonicTask(self):
+        print(f'start harmonic measurement task')
         regs = self.MAXREG + 1
 
         # MOCK
@@ -303,31 +310,25 @@ class Domain(QObject):
             regs = 5
 
         with MeasureContext(self._instruments):
-            for code in range(regs):
-                self._measureCode(code=code)
-                self._processHarmonicCode(n)
+            for harm in [2, 3]:
+                self._instruments.harmonic = harm
+                for code in range(regs):
+                    self._measureCode(code=code)
+                    self._processHarmonicCode(harm)
 
+        self._processHarmonics()
+        self.harmonicMeasured.emit()
         print('end harmonic measurement task')
 
     def _processHarmonicCode(self, n):
         print('processing code measurement')
-        if n == 2:
-            self.harm_x2.append(self._parseAmpStr(self._lastMeasurement[1]))
-        elif n == 3:
-            self.harm_x3.append(self._parseAmpStr(self._lastMeasurement[1]))
+        self.harms[n].append(self._parseAmpStr(self._lastMeasurement[1]))
 
-    def processHarmonic(self, n):
-        print(f'processing harmonic stats, harmonic={n}')
-        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x2
-        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x3
-        if n == 2:
-            self.harm_x2_deltas.clear()
-            for x1, x2 in zip(self.amps, self.harm_x2):
-                self.harm_x2_deltas.append(max(x1) - max(x2))
-        if n == 3:
-            self.harm_x3_deltas.clear()
-            for x1, x3 in zip(self.amps, self.harm_x3):
-                self.harm_x3_deltas.append(max(x1) - max(x3))
+    def _processHarmonics(self):
+        print(f'processing harmonic stats')
+        for key, harms in self.harms.items():
+            for base, harm in zip(self.amps, harms):
+                self.harm_deltas[key].append(max(base) - max(harm))
 
     @property
     def analyzerAddress(self):

@@ -12,6 +12,7 @@ class HarmonicMeasureWidget(QWidget):
         self._plot = PlotWidget(parent=None, toolbar=True)
 
         self.btnMeasure = QPushButton('Измерить')
+        self.btnMeasure.setEnabled(False)
 
         self._hlay = QHBoxLayout()
         self._hlay.addWidget(self.btnMeasure)
@@ -36,13 +37,11 @@ class HarmonicMeasureWidget(QWidget):
         self._plot.clear()
         self._init()
 
-    def plot(self, n):
-        print(f'plotting harmonic={n}')
-        if n == 2:
-            self._plot.plot(self._domain.codes, self._domain.harm_x2_deltas, label='x2')
-        elif n == 3:
-            self._plot.plot(self._domain.codes, self._domain.harm_x3_deltas, label='x3')
-            self._plot.legend()
+    def plot(self):
+        print(f'plotting harmonic deltas')
+        for key, values in self._domain.harm_deltas.items():
+            self._plot.plot(self._domain.codes, values, label=f'f x {key}')
+        self._plot.legend()
 
 
 
