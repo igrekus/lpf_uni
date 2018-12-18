@@ -53,6 +53,7 @@ class MainWindow(QMainWindow):
         self._domain.statsReady.connect(self.on_statsReady)
         self._domain.codeMeasured.connect(self.on_codeMeasured)
         self._domain.harmonicMeasured.connect(self.on_harmonicMeasured)
+        self._domain.singleMeasured.connect(self.on_singleMeasured)
 
     def _setupControls(self):
         pass
@@ -98,6 +99,9 @@ class MainWindow(QMainWindow):
 
     def on_harmonicMeasured(self):
         self._ui.singleMeasure.plotHarmonic()
+
+    def on_singleMeasured(self):
+        self._ui.singleMeasure.plot()
 
     @pyqtSlot(str)
     def on_editAnalyzerAddr_textChanged(self, text):

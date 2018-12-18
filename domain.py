@@ -151,6 +151,7 @@ class Domain(QObject):
     measurementFinished = pyqtSignal()
     statsReady = pyqtSignal()
     harmonicMeasured = pyqtSignal()
+    singleMeasured = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -275,7 +276,7 @@ class Domain(QObject):
             self._measureCode(harmonic=self._harmonic, code=self._code)
             self._processCode()
 
-        self.harmonicMeasured.emit()
+        self.singleMeasured.emit()
 
     @property
     def analyzerAddress(self):
