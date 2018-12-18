@@ -98,7 +98,13 @@ class MainWindow(QMainWindow):
         self._ui.statPlot.plotCode()
 
     def on_harmonicMeasured(self):
-        self._ui.singleMeasure.plotHarmonic()
+        self._ui.harmonicMeasure.btnMeasure.setEnabled(True)
+        if self._domain.harm_x2 and not self._domain.harm_x3:
+            self._domain.processHarmonic(2)
+            self._ui.harmonicMeasure.plot(2)
+        elif self._domain.harm_x2 and self._domain.harm_x3:
+            self._domain.processHarmonic(3)
+            self._ui.harmonicMeasure.plot(3)
 
     def on_singleMeasured(self):
         self._ui.singleMeasure.plot()
@@ -134,7 +140,25 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_btnMeasureHarmonic_clicked(self):
-        print('print measure harmonics')
+        if not self._domain.amps:
+            QMessageBox.information(self, 'Внимание',
+                                    'Сперва необходимо провести стандартное измерение.')
+            return
+
+        if not self._domain.harm_x2:
+            self._ui.harmonicMeasure.clear()
+            QMessageBox.information(self, 'Внимание',
+                                    'Включите смещение частоты и выставьте множитель равный <font color="red">двум</font>. '
+                                    'Затем нажмите кнопку OK.')
+            self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
+            self._domain.measureHarmonic(2)
+
+        elif not self._domain.harm_x3:
+            QMessageBox.information(self, 'Внимание',
+                                    'Включите смещение частоты и выставьте множитель равный <font color="red">трём</font>. '
+                                    'Затем нажмите кнопку OK.')
+            self._ui.harmonicMeasure.btnMeasure.setEnabled(False)
+            self._domain.measureHarmonic(3)
 
     @pyqtSlot(int)
     def on_spinCode_valueChanged(self, value):
@@ -157,11 +181,15 @@ class MainWindow(QMainWindow):
         print('export to excel')
         to_export = [('частота_среза.xlsx', 'Код', 'Частота среза', self._domain.cutoffXs, self._domain.cutoffYs),
                      ('дельта_частоты.xlsx', 'Код', 'Дельта', self._domain.deltaXs, self._domain.deltaYs),
-                     ('коэфф_подавления_x2.xlsx', 'Код', 'Коффю подавления при x2 частоте', self._domain.lossDoubleXs, self._domain.lossDoubleYs),
-                     ('коэфф_подавления_x3.xlsx', 'Код', 'Коффю подавления при x3 частоте', self._domain.lossTripleXs, self._domain.lossTripleYs)]
+                     ('затухание_x2.xlsx', 'Код', 'Затухание при x2 частоте', self._domain.lossDoubleXs, self._domain.lossDoubleYs),
+                     ('затухание_x3.xlsx', 'Код', 'Затухание при x3 частоте', self._domain.lossTripleXs, self._domain.lossTripleYs)]
 
         for ex in to_export:
             self.export_to_excel(ex)
+
+        self.export_to_excel_double_data(
+            ('подавление_гармоник.xlsx', 'Код', 'Подавление x2', 'Подавление х3', self._domain.codes, self._domain.harm_x2_deltas, self._domain.harm_x3_deltas)
+        )
 
         subprocess.call('explorer ' + '.\\excel\\', shell=True)
 
@@ -199,5 +227,48 @@ class MainWindow(QMainWindow):
 
         wb.close()
 
+    def export_to_excel_double_data(self, data):
+        fname, xname, yname1, yname2, xdata, ydata1, ydata2 = data
 
+        excel_path = ".\\excel\\"
+        try:
+            os.makedirs(excel_path)
+        except OSError as ex:
+            if ex.errno != errno.EEXIST:
+                raise
+
+        wb = xlsxwriter.Workbook(excel_path + fname)
+        ws = wb.add_worksheet("Sheet1")
+
+        ws.write("A1", xname)
+        ws.write("B1", yname1)
+        ws.write("C1", yname2)
+
+        start_row = 0
+        row = 0
+        for x, y1, y2 in zip(xdata, ydata1, ydata2):
+            row += 1
+            ws.write(start_row + row, 0, x)
+            ws.write(start_row + row, 1, y1)
+            ws.write(start_row + row, 2, y2)
+
+        chart = wb.add_chart({
+            "type": "scatter",
+            "subtype": "smooth"
+        })
+        chart.add_series({
+            "name": "Sheet1!$B$1",
+            "categories": "=Sheet1!$A$2:$A$" + str(row + 1),
+            "values": "=Sheet1!$B$2:$B$" + str(row + 1)
+        })
+        chart.add_series({
+            "name": "Sheet1!$C$1",
+            "categories": "=Sheet1!$A$2:$A$" + str(row + 1),
+            "values": "=Sheet1!$C$2:$C$" + str(row + 1)
+        })
+        chart.set_x_axis({"name": xname})
+        chart.set_y_axis({"name": 'Подавление гармоник'})
+        ws.insert_chart("F3", chart)
+
+        wb.close()
 

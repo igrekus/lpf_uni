@@ -174,6 +174,10 @@ class Domain(QObject):
         self.loss_triple_freq = list()
         self.cutoff_freq_delta_x = list()
         self.cutoff_freq_delta_y = list()
+        self.harm_x2 = list()
+        self.harm_x3 = list()
+        self.harm_x2_deltas = list()
+        self.harm_x3_deltas = list()
 
         self._cutoffMag = -6
         self._cutoffAmp = 0
@@ -191,6 +195,8 @@ class Domain(QObject):
         self.loss_triple_freq.clear()
         self.cutoff_freq_delta_x.clear()
         self.cutoff_freq_delta_y.clear()
+        self.harm_x2.clear()
+        self.harm_x3.clear()
 
     def findInstruments(self):
         print('find instruments')
@@ -277,6 +283,51 @@ class Domain(QObject):
             self._processCode()
 
         self.singleMeasured.emit()
+
+    def measureHarmonic(self, n):
+        print(f'run harmonic measurement, cutoff={self._cutoffMag}, harmonic={n}')
+
+        if n == 2:
+            self.harm_x2.clear()
+        elif n == 3:
+            self.harm_x3.clear()
+
+        self.pool.start(Task(self.harmonicMeasured.emit, self._measureHarmonicTask, n))
+
+    def _measureHarmonicTask(self, n):
+        print(f'start harmonic measurement task, harmonic={n}')
+        regs = self.MAXREG + 1
+
+        # MOCK
+        if def_mock:
+            regs = 5
+
+        with MeasureContext(self._instruments):
+            for code in range(regs):
+                self._measureCode(code=code)
+                self._processHarmonicCode(n)
+
+        print('end harmonic measurement task')
+
+    def _processHarmonicCode(self, n):
+        print('processing code measurement')
+        if n == 2:
+            self.harm_x2.append(self._parseAmpStr(self._lastMeasurement[1]))
+        elif n == 3:
+            self.harm_x3.append(self._parseAmpStr(self._lastMeasurement[1]))
+
+    def processHarmonic(self, n):
+        print(f'processing harmonic stats, harmonic={n}')
+        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x2
+        # TODO x2 x3 freq, get max amp, plot code->max amp x1 - max amp x3
+        if n == 2:
+            self.harm_x2_deltas.clear()
+            for x1, x2 in zip(self.amps, self.harm_x2):
+                self.harm_x2_deltas.append(max(x1) - max(x2))
+        if n == 3:
+            self.harm_x3_deltas.clear()
+            for x1, x3 in zip(self.amps, self.harm_x3):
+                self.harm_x3_deltas.append(max(x1) - max(x3))
 
     @property
     def analyzerAddress(self):
