@@ -13,11 +13,11 @@ class MeasureContext:
         self._model = model
 
     def __enter__(self):
-        print('\nacquire analyzer context')
+        print('\nacquire analyzer context\n')
         self._model._analyzer.init_instrument()
 
     def __exit__(self, *args):
-        print('\nexit analyzer context')
+        print('\nexit analyzer context\n')
         self._model._analyzer.finish()
 
 
