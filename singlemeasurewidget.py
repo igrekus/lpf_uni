@@ -30,8 +30,8 @@ class SingleMeasureWidget(QWidget):
         self._plot.clear()
         self._init()
 
-    def plotHarmonic(self):
-        print('plotting harmonic')
+    def plot(self):
+        print('plotting single measurement')
         self._plot.plot(self._domain.singleMeasureXs, self._domain.singleMeasureYs, color='0.4')
 
 
