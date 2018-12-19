@@ -128,6 +128,25 @@ class InstrumentManager:
 
     @harmonic.setter
     def harmonic(self, value):
+        # SENSe<Ch>:OFFSet[:STATe] <bool>
+
+        # SENS:OFFS:PORT:DATA?
+        # SENSe<Ch>:OFFSet:PORT<Pt>[:FREQuency]:DATA?
+        # Считывает массив частот точек измерения порта Pt когда функция смещения частоты активна и тип смещения выбран "PORT" (только запрос)
+
+        # SENS:OFFS:PORT:MULT
+        # SENSe<Ch>:OFFSet:PORT<Pt>[:FREQuency]:MULTiplier <numeric>
+        # SENSe<Ch>:OFFSet:PORT<Pt>[:FREQuency]:MULTiplier?
+        # Описание
+        # Устанавливает или считывает множитель базового частотного
+        # диапазона для получения частоты порта Pt, когда функция
+        # смещения частоты включена и тип смещения выбран "PORT".
+        # (команда/запрос)
+
+        # 1 - вкл
+        # 2 - тип порт1 -> порт2
+        # 3 - порт2: множитель x2, x3
+
         print('>>> IM set harmonic', value)
 
     @property
