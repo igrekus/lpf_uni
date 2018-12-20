@@ -171,13 +171,16 @@ class MainWindow(QMainWindow):
                      ('затухание_x2.xlsx', 'Код', 'Затухание при x2 частоте', self._domain.lossDoubleXs, self._domain.lossDoubleYs),
                      ('затухание_x3.xlsx', 'Код', 'Затухание при x3 частоте', self._domain.lossTripleXs, self._domain.lossTripleYs)]
 
-        for ex in to_export:
-            self.export_to_excel(ex)
+        try:
+            for ex in to_export:
+                self.export_to_excel(ex)
 
-        self.export_to_excel_double_data(
-            ('подавление_гармоник.xlsx', 'Код', 'Подавление x2', 'Подавление х3', self._domain.codes, self._domain.harm_x2_deltas, self._domain.harm_x3_deltas)
-        )
+            self.export_to_excel_double_data(
+                ('подавление_гармоник.xlsx', 'Код', 'Подавление x2', 'Подавление х3', self._domain.codes, self._domain.harm_deltas[2], self._domain.harm_deltas[3])
+            )
 
+        except Exception as ex:
+            print(ex)
         subprocess.call('explorer ' + '.\\excel\\', shell=True)
 
     def export_to_excel(self, data):

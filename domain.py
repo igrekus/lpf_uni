@@ -60,8 +60,8 @@ class InstrumentManager:
             s = serial.Serial(port=port, baudrate=9600, timeout=0.5)
             if s.is_open:
                 s.write(b'#NAME')
-                time.sleep(1.7)
-                ans = s.read(9)
+                time.sleep(1.5)
+                ans = s.readall()
                 s.close()
                 if b'ARDUINO' in ans:
                     return port
@@ -288,7 +288,7 @@ class Domain(QObject):
         self.statsReady.emit()
 
     def measureSingle(self):
-        print(f'measure harmonic={self._harmonic}, code={self._code}')
+        print(f'measure harmonic={self._instruments._harmonic}, code={self._code}')
         with MeasureContext(self._instruments):
             self._measureCode(code=self._code)
             self._processCode()
