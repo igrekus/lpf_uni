@@ -12,6 +12,7 @@ class HarmonicMeasureWidget(QWidget):
         self._plot = PlotWidget(parent=None, toolbar=True)
 
         self.btnMeasure = QPushButton('Измерить')
+        self.btnMeasure.setEnabled(False)
 
         self._hlay = QHBoxLayout()
         self._hlay.addWidget(self.btnMeasure)
