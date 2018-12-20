@@ -57,6 +57,7 @@ class InstrumentManager:
             s = serial.Serial(port=port, baudrate=9600, timeout=0.5)
             if s.is_open:
                 s.write(b'#NAME')
+                time.sleep(1.7)
                 ans = s.read(9)
                 s.close()
                 if b'ARDUINO' in ans:
@@ -116,7 +117,7 @@ class InstrumentManager:
         if not self._programmer.set_lpf_code(code):
             print(f'error setting code: {code}')
             return [], []
-        time.sleep(0.7)
+        # time.sleep(1)
         return self._analyzer.measure(code)
 
     @property
