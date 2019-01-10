@@ -180,6 +180,14 @@ class MainWindow(QMainWindow):
 
         subprocess.call('explorer ' + '.\\excel\\', shell=True)
 
+    @pyqtSlot()
+    def on_btnExportSingle_clicked(self):
+        data = ('ачх_от_кода.xlsx', 'Частота', 'Амплитуда', 'Код', self._domain.singleMeasureXs, self._domain.singleMeasureYs, self._domain.code)
+
+        self.export_to_excel_single_measure(data)
+
+        subprocess.call('explorer ' + '.\\excel\\', shell=True)
+
     def export_to_excel(self, data):
         fname, xname, yname, xdata, ydata = data
 
@@ -255,6 +263,47 @@ class MainWindow(QMainWindow):
         })
         chart.set_x_axis({"name": xname})
         chart.set_y_axis({"name": 'Подавление гармоник'})
+        ws.insert_chart("F3", chart)
+
+        wb.close()
+
+    def export_to_excel_single_measure(self, data):
+        fname, xname, yname, codename, xdata, ydata, code = data
+
+        excel_path = ".\\excel\\"
+        try:
+            os.makedirs(excel_path)
+        except OSError as ex:
+            if ex.errno != errno.EEXIST:
+                raise
+
+        wb = xlsxwriter.Workbook(excel_path + fname)
+        ws = wb.add_worksheet("Sheet1")
+
+        ws.write("A1", xname)
+        ws.write("B1", yname)
+        ws.write("C1", codename)
+        ws.write("C2", code)
+
+        start_row = 0
+        row = 0
+        for x, y in zip(xdata, ydata):
+            row += 1
+            ws.write(start_row + row, 0, x)
+            ws.write(start_row + row, 1, y)
+
+        chart = wb.add_chart({
+            "type": "scatter",
+            "subtype": "smooth"
+        })
+        chart.add_series({
+            "name": "Sheet1!$B$1",
+            "categories": "=Sheet1!$A$2:$A$" + str(row + 1),
+            "values": "=Sheet1!$B$2:$B$" + str(row + 1)
+        })
+
+        chart.set_x_axis({"name": xname})
+        chart.set_y_axis({"name": "АЧХ"})
         ws.insert_chart("F3", chart)
 
         wb.close()

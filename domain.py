@@ -192,6 +192,7 @@ class Domain(QObject):
         self.pool = QThreadPool()
 
         self._code = 0
+        self._harmonic = 1
 
         self._lastMeasurement = tuple()
         self._lastFreqs = list()
@@ -307,9 +308,9 @@ class Domain(QObject):
         self.statsReady.emit()
 
     def measureSingle(self):
-        print(f'measure harmonic={self._harmonic}, code={self._code}')
+        print(f'measure harmonic={self.harmonicN}, code={self.code}')
         with MeasureContext(self._instruments):
-            self._measureCode(code=self._code)
+            self._measureCode(code=self.code)
             self._processCode()
 
         self.singleMeasured.emit()
