@@ -32,6 +32,7 @@ class SingleMeasureWidget(QWidget):
 
     def plot(self):
         print('plotting single measurement')
+        self.clear()
         self._plot.plot(self._domain.singleMeasureXs, self._domain.singleMeasureYs, color='0.4')
 
 
