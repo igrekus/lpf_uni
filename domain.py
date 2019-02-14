@@ -37,7 +37,7 @@ class InstrumentManager:
     def _find_ports(self):
         for port in [f'COM{i+1}' for i in range(256)]:
             try:
-                s = serial.Serial(port)
+                s = serial.Serial(port=port, baudrate=115200)
                 s.close()
                 self._available_ports.append(port)
             except (OSError, serial.SerialException):
@@ -45,7 +45,7 @@ class InstrumentManager:
 
     def _find_spi_port(self):
         for port in self._available_ports:
-            s = serial.Serial(port=port, baudrate=9600, timeout=0.5)
+            s = serial.Serial(port=port, baudrate=115200, timeout=0.5)
             if s.is_open:
                 s.write(b'<n>')
                 ans = s.read(9)
@@ -57,7 +57,8 @@ class InstrumentManager:
 
     def _find_parallel_port(self):
         for port in self._available_ports:
-            s = serial.Serial(port=port, baudrate=9600, timeout=0.5)
+            s = serial.Serial(port=port, baudrate=115200, stopbits=serial.STOPBITS_ONE, bytesize=8,
+                              parity=serial.PARITY_NONE, timeout=0.5)
             if s.is_open:
                 s.write(b'#NAME')
                 time.sleep(1.7)
