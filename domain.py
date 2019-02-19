@@ -62,7 +62,7 @@ class InstrumentManager:
             if s.is_open:
                 s.write(b'#NAME')
                 time.sleep(0.3)
-                ans = s.read(9)
+                ans = s.read_all()
                 s.close()
                 if b'ARDUINO' in ans:
                     return port
