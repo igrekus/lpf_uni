@@ -61,7 +61,7 @@ class InstrumentManager:
                               parity=serial.PARITY_NONE, timeout=0.5)
             if s.is_open:
                 s.write(b'#NAME')
-                time.sleep(1.7)
+                time.sleep(0.3)
                 ans = s.read(9)
                 s.close()
                 if b'ARDUINO' in ans:
