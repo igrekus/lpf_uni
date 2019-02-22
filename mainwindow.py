@@ -123,6 +123,14 @@ class MainWindow(QMainWindow):
 
         self._ui.editArduino.setText(self._domain.programmerName)
         self._ui.editAnalyzer.setText(self._domain.analyzerName)
+
+        if self._domain.isSPI:
+            self._ui.radioProtPara.setEnabled(True)
+            self._ui.radioProtSerial.setEnabled(True)
+        else:
+            self._ui.radioProtPara.setEnabled(True)
+            self._ui.radioProtSerial.setEnabled(True)
+
         self._modeMeasureReady()
 
     @pyqtSlot()
@@ -154,6 +162,10 @@ class MainWindow(QMainWindow):
     @pyqtSlot(int)
     def on_spinHarmonic_valueChanged(self, value):
         self._domain.harmonicN = value
+
+    @pyqtSlot(bool)
+    def on_radioProtPara_toggled(self, state):
+        self._domain.setSpiProtocol(parallel=state)
 
     @pyqtSlot()
     def on_btnExportPng_clicked(self):

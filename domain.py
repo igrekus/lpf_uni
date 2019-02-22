@@ -1,8 +1,15 @@
 import time
-from collections import defaultdict
-
 import serial
+
+from collections import defaultdict
 from PyQt5.QtCore import QObject, pyqtSignal, QRunnable, pyqtSlot, QThreadPool
+
+from arduino.arduinospi import ArduinoSpi
+from arduino.arduinospimock import ArduinoSpiMock
+from arduino.arduinoparallel import ArduinoParallel
+
+from instr.obzor304 import Obzor304
+from instr.obzor304mock import Obzor304Mock
 
 # MOCK
 def_mock = True
@@ -71,30 +78,25 @@ class InstrumentManager:
 
     def _find_programmer(self):
         if def_mock:
-            from arduino.arduinospimock import ArduinoSpiMock
             self._programmer = ArduinoSpiMock()
             return
 
         port = self._find_parallel_port()
         if port:
-            from arduino.arduinoparallel import ArduinoParallel
             self._programmer = ArduinoParallel(port=port, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
                                                stopbits=serial.STOPBITS_ONE, timeout=0.5)
             return
 
         port = self._find_spi_port()
         if port:
-            from arduino.arduinospi import ArduinoSpi
             self._programmer = ArduinoSpi(port=port, baudrate=115200, parity=serial.PARITY_NONE, bytesize=8,
                                           stopbits=serial.STOPBITS_ONE, timeout=1)
 
     def _find_analyzer(self):
         if def_mock:
-            from instr.obzor304mock import Obzor304Mock
             self._analyzer = Obzor304Mock(self.analyzer_addr)
             return
 
-        from instr.obzor304 import Obzor304
         try:
             self._analyzer = Obzor304(self._analyzer_addr)
         except Exception as ex:
@@ -116,6 +118,9 @@ class InstrumentManager:
         print(f'analyzer: {self._analyzer}')
 
         return self._programmer and self._analyzer
+
+    def set_spi_protocol(self, parallel=False):
+        self._programmer.set_lpf_code = self._programmer.set_lpf_code_parallel if parallel else self._programmer.set_lpf_code_spi
 
     def measure(self, code):
         if not self._programmer.set_lpf_code(code):
@@ -158,6 +163,10 @@ class InstrumentManager:
     @analyzer_addr.setter
     def analyzer_addr(self, addr):
         self._analyzer_addr = addr
+
+    @property
+    def isSPI(self):
+        return not isinstance(self._programmer, ArduinoParallel)
 
 
 class Task(QRunnable):
@@ -352,6 +361,9 @@ class Domain(QObject):
             for base, harm in zip(self.amps, harms):
                 self.harm_deltas[key].append(max(base) - max(harm))
 
+    def setSpiProtocol(self, parallel=False):
+        self._instruments.set_spi_protocol(parallel)
+
     @property
     def analyzerAddress(self):
         return self._instruments.analyzer_addr
@@ -448,4 +460,8 @@ class Domain(QObject):
     @property
     def cutoffAmp(self):
         return self._cutoffAmp
+
+    @property
+    def isSPI(self):
+        return self._instruments.isSPI
 
