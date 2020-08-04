@@ -122,7 +122,7 @@ class InstrumentManager:
         return self._programmer and self._analyzer
 
     def set_spi_protocol(self, parallel=False):
-        self._programmer.set_lpf_code = self._programmer.set_lpf_code_parallel if parallel else self._programmer.set_lpf_code_spi
+        self._programmer.set_lpf_code = self._programmer.set_lpf_code_parallel if parallel else self._programmer.set_lpf_code_spi_s_format
 
     def measure(self, code):
         if not self._programmer.set_lpf_code(code):
