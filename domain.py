@@ -5,7 +5,7 @@ from collections import defaultdict
 from PyQt5.QtCore import QObject, pyqtSignal, QRunnable, pyqtSlot, QThreadPool
 
 from arduino.arduinospi import ArduinoSpi
-from arduino.arduinospimock import ArduinoSpiMock
+from arduino.portmock import PortMock
 from arduino.arduinoparallel import ArduinoParallel
 
 from instr.obzor304 import Obzor304
@@ -78,19 +78,21 @@ class InstrumentManager:
 
     def _find_programmer(self):
         if def_mock:
-            self._programmer = ArduinoSpiMock()
+            self._programmer = ArduinoParallel(port=(PortMock()))
             return
 
-        port = self._find_parallel_port()
+        port_str = self._find_parallel_port()
+        port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
+                             stopbits=serial.STOPBITS_ONE, timeout=0.5)
         if port:
-            self._programmer = ArduinoParallel(port=port, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
-                                               stopbits=serial.STOPBITS_ONE, timeout=0.5)
+            self._programmer = ArduinoParallel(port=port)
             return
 
-        port = self._find_spi_port()
+        port_str = self._find_spi_port()
+        port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
+                             stopbits=serial.STOPBITS_ONE, timeout=0.5)
         if port:
-            self._programmer = ArduinoSpi(port=port, baudrate=115200, parity=serial.PARITY_NONE, bytesize=8,
-                                          stopbits=serial.STOPBITS_ONE, timeout=1)
+            self._programmer = ArduinoSpi(port=port)
 
     def _find_analyzer(self):
         if def_mock:
