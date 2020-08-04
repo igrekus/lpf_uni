@@ -40,6 +40,7 @@ class InstrumentManager:
         self._available_ports = list()
 
         self._harmonic = 1
+        self._spi_pin_address = 0
 
     def _find_ports(self):
         for port in [f'COM{i+1}' for i in range(256)]:
@@ -82,17 +83,19 @@ class InstrumentManager:
             return
 
         port_str = self._find_parallel_port()
-        port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
-                             stopbits=serial.STOPBITS_ONE, timeout=0.5)
-        if port:
-            self._programmer = ArduinoParallel(port=port)
-            return
+        if port_str:
+            port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
+                                 stopbits=serial.STOPBITS_ONE, timeout=0.5)
+            if port:
+                self._programmer = ArduinoParallel(port=port)
+                return
 
         port_str = self._find_spi_port()
-        port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
-                             stopbits=serial.STOPBITS_ONE, timeout=0.5)
-        if port:
-            self._programmer = ArduinoSpi(port=port)
+        if port_str:
+            port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
+                                 stopbits=serial.STOPBITS_ONE, timeout=0.5)
+            if port:
+                self._programmer = ArduinoSpi(port=port)
 
     def _find_analyzer(self):
         if def_mock:
@@ -122,10 +125,11 @@ class InstrumentManager:
         return self._programmer and self._analyzer
 
     def set_spi_protocol(self, parallel=False):
+        # self._programmer.set_lpf_code = self._programmer.set_lpf_code_parallel if parallel else self._programmer.set_lpf_code_spi_s_format_reversed
         self._programmer.set_lpf_code = self._programmer.set_lpf_code_parallel if parallel else self._programmer.set_lpf_code_spi_s_format
 
-    def measure(self, code):
-        if not self._programmer.set_lpf_code(code):
+    def measure(self, code, address):
+        if not self._programmer.set_lpf_code(code, address):
             print(f'error setting code: {code}')
             return [], []
         # time.sleep(1)
@@ -251,9 +255,9 @@ class Domain(QObject):
         self._clear()
         self.pool.start(Task(self.measurementFinished.emit, self._measureTask))
 
-    def _measureCode(self, code=0):
+    def _measureCode(self, code=0, address=0):
         print(f'\nmeasure: code={code:03d}, bin={code:07b}')
-        self._lastMeasurement = self._instruments.measure(code)
+        self._lastMeasurement = self._instruments.measure(code, self._instruments._spi_pin_address)
 
     def _measureTask(self):
         print('start measurement task')
@@ -265,7 +269,7 @@ class Domain(QObject):
 
         with MeasureContext(self._instruments):
             for code in range(regs):
-                self._measureCode(code=code)
+                self._measureCode(code=code, address=self._instruments._spi_pin_address)
                 self._processCode()
                 self.codeMeasured.emit()
 
@@ -322,7 +326,7 @@ class Domain(QObject):
     def measureSingle(self):
         print(f'measure harmonic={self.harmonicN}, code={self.code}')
         with MeasureContext(self._instruments):
-            self._measureCode(code=self.code)
+            self._measureCode(code=self.code, address=self._instruments._spi_pin_address)
             self._processCode()
 
         self.singleMeasured.emit()
@@ -365,6 +369,9 @@ class Domain(QObject):
 
     def setSpiProtocol(self, parallel=False):
         self._instruments.set_spi_protocol(parallel)
+
+    def setSpiPinAddress(self, addr: str):
+        self._instruments._spi_pin_address = int(addr)
 
     @property
     def analyzerAddress(self):

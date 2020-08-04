@@ -175,6 +175,12 @@ class MainWindow(QMainWindow):
         subprocess.call(f'explorer {path}', shell=True)
         print('done')
 
+    @pyqtSlot(str)
+    def on_editSpiPinAddr_textChanged(self, value: str):
+        if not (value and value.isdigit()):
+            return
+        self._domain.setSpiPinAddress(value)
+
     @pyqtSlot()
     def on_btnExportExcel_clicked(self):
         print('export to excel')
