@@ -40,6 +40,7 @@ class InstrumentManager:
         self._available_ports = list()
 
         self._harmonic = 1
+        self._spi_pin_address = 0
 
     def _find_ports(self):
         for port in [f'COM{i+1}' for i in range(256)]:
@@ -82,17 +83,19 @@ class InstrumentManager:
             return
 
         port_str = self._find_parallel_port()
-        port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
-                             stopbits=serial.STOPBITS_ONE, timeout=0.5)
-        if port:
-            self._programmer = ArduinoParallel(port=port)
-            return
+        if port_str:
+            port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
+                                 stopbits=serial.STOPBITS_ONE, timeout=0.5)
+            if port:
+                self._programmer = ArduinoParallel(port=port)
+                return
 
         port_str = self._find_spi_port()
-        port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
-                             stopbits=serial.STOPBITS_ONE, timeout=0.5)
-        if port:
-            self._programmer = ArduinoSpi(port=port)
+        if port_str:
+            port = serial.Serial(port=port_str, baudrate=9600, parity=serial.PARITY_NONE, bytesize=8,
+                                 stopbits=serial.STOPBITS_ONE, timeout=0.5)
+            if port:
+                self._programmer = ArduinoSpi(port=port)
 
     def _find_analyzer(self):
         if def_mock:
